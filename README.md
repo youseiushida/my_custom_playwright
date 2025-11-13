@@ -6,7 +6,8 @@ npm run build
 $env:PLAYWRIGHT_MCP_SHORTEN_URLS = '1'
 node .\packages\playwright\cli.js run-mcp-server --browser=chromium --port=8931 --allowed-hosts=*
 ```
-http://localhost:8931/mcp　をStreamableHTTPで接続する。
+http://localhost:8931/mcp
+をStreamableHTTPで接続する。
 
 
 # 🎭 Playwright
