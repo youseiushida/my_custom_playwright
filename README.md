@@ -1,3 +1,14 @@
+# Custom MCPの使い方。
+MCPからのレスポンスにURLを直接含めず、代わりにIDを返す。IDからURLを取得するためのツールを追加した。これにより、MCPからのレスポンスのトークン量が1/10程に削減できる。以下に使い方を示す。
+```
+npm install
+npm run build
+$env:PLAYWRIGHT_MCP_SHORTEN_URLS = '1'
+node .\packages\playwright\cli.js run-mcp-server --browser=chromium --port=8931 --allowed-hosts=*
+```
+http://localhost:8931/mcp　をStreamableHTTPで接続する。
+
+
 # 🎭 Playwright
 
 [![npm version](https://img.shields.io/npm/v/playwright.svg)](https://www.npmjs.com/package/playwright) <!-- GEN:chromium-version-badge -->[![Chromium version](https://img.shields.io/badge/chromium-143.0.7499.4-blue.svg?logo=google-chrome)](https://www.chromium.org/Home)<!-- GEN:stop --> <!-- GEN:firefox-version-badge -->[![Firefox version](https://img.shields.io/badge/firefox-142.0.1-blue.svg?logo=firefoxbrowser)](https://www.mozilla.org/en-US/firefox/new/)<!-- GEN:stop --> <!-- GEN:webkit-version-badge -->[![WebKit version](https://img.shields.io/badge/webkit-26.0-blue.svg?logo=safari)](https://webkit.org/)<!-- GEN:stop --> [![Join Discord](https://img.shields.io/badge/join-discord-informational)](https://aka.ms/playwright/discord)

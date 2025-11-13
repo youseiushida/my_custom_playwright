@@ -34,6 +34,7 @@ export type CLIOptions = {
   blockServiceWorkers?: boolean;
   browser?: string;
   caps?: string[];
+  shortenUrls?: boolean;
   cdpEndpoint?: string;
   cdpHeader?: Record<string, string>;
   config?: string;
@@ -229,6 +230,7 @@ export function configFromCLIOptions(cliOptions: CLIOptions): Config {
     outputDir: cliOptions.outputDir,
     imageResponses: cliOptions.imageResponses,
     testIdAttribute: cliOptions.testIdAttribute,
+    shortenUrls: cliOptions.shortenUrls,
     timeouts: {
       action: cliOptions.timeoutAction,
       navigation: cliOptions.timeoutNavigation,
@@ -244,6 +246,7 @@ function configFromEnv(): Config {
   options.blockServiceWorkers = envToBoolean(process.env.PLAYWRIGHT_MCP_BLOCK_SERVICE_WORKERS);
   options.browser = envToString(process.env.PLAYWRIGHT_MCP_BROWSER);
   options.caps = commaSeparatedList(process.env.PLAYWRIGHT_MCP_CAPS);
+  options.shortenUrls = envToBoolean(process.env.PLAYWRIGHT_MCP_SHORTEN_URLS);
   options.cdpEndpoint = envToString(process.env.PLAYWRIGHT_MCP_CDP_ENDPOINT);
   options.cdpHeader = headerParser(process.env.PLAYWRIGHT_MCP_CDP_HEADERS, {});
   options.config = envToString(process.env.PLAYWRIGHT_MCP_CONFIG);

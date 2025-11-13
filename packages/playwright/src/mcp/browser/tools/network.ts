@@ -34,13 +34,15 @@ const requests = defineTabTool({
   handle: async (tab, params, response) => {
     const requests = await tab.requests();
     for (const request of requests)
-      response.addResult(await renderRequest(request));
+      response.addResult(await renderRequest(tab, request));
   },
 });
 
-async function renderRequest(request: playwright.Request) {
+async function renderRequest(tab: import('../tab').Tab, request: playwright.Request) {
   const result: string[] = [];
-  result.push(`[${request.method().toUpperCase()}] ${request.url()}`);
+  const url = request.url();
+  const shown = tab.context.config.shortenUrls ? tab.context.urlRegistry().shorten(url) : url;
+  result.push(`[${request.method().toUpperCase()}] ${shown}`);
   const hasResponse = (request as Request)._hasResponse;
   if (hasResponse) {
     const response = await request.response();

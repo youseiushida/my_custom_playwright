@@ -33,6 +33,7 @@ import type * as actions from './actions';
 import type { SessionLog } from './sessionLog';
 import type { Tracing } from '../../../../playwright-core/src/client/tracing';
 import type { ClientInfo } from '../sdk/server';
+import { UrlRegistry } from './urlRegistry';
 
 const testDebug = debug('pw:mcp:test');
 
@@ -57,6 +58,7 @@ export class Context {
   private _closeBrowserContextPromise: Promise<void> | undefined;
   private _runningToolName: string | undefined;
   private _abortController = new AbortController();
+  private _urlRegistry = new UrlRegistry();
 
   constructor(options: ContextOptions) {
     this.config = options.config;
@@ -155,6 +157,10 @@ export class Context {
 
   setRunningTool(name: string | undefined) {
     this._runningToolName = name;
+  }
+
+  urlRegistry(): UrlRegistry {
+    return this._urlRegistry;
   }
 
   private async _closeBrowserContextImpl() {

@@ -127,7 +127,7 @@ ${this._code.join('\n')}
 
     // List browser tabs.
     if (this._includeSnapshot !== 'none' || this._includeTabs)
-      response.push(...renderTabsMarkdown(this._context.tabs(), this._includeTabs));
+      response.push(...renderTabsMarkdown(this._context, this._context.tabs(), this._includeTabs));
 
     // Add snapshot if provided.
     if (this._tabSnapshot?.modalStates.length) {
@@ -135,7 +135,7 @@ ${this._code.join('\n')}
       response.push('');
     } else if (this._tabSnapshot) {
       const includeSnapshot = options.omitSnapshot ? 'none' : this._includeSnapshot;
-      response.push(renderTabSnapshot(this._tabSnapshot, includeSnapshot));
+      response.push(renderTabSnapshot(this._context, this._tabSnapshot, includeSnapshot));
       response.push('');
     }
 
@@ -167,13 +167,15 @@ ${this._code.join('\n')}
   }
 }
 
-function renderTabSnapshot(tabSnapshot: TabSnapshot, includeSnapshot: 'none' | 'full' | 'incremental'): string {
+function renderTabSnapshot(context: Context, tabSnapshot: TabSnapshot, includeSnapshot: 'none' | 'full' | 'incremental'): string {
   const lines: string[] = [];
 
   if (tabSnapshot.consoleMessages.length) {
     lines.push(`### New console messages`);
-    for (const message of tabSnapshot.consoleMessages)
-      lines.push(`- ${trim(message.toString(), 100)}`);
+    for (const message of tabSnapshot.consoleMessages) {
+      const text = trim(message.toString(), 100);
+      lines.push(`- ${maybeShortenText(context, text)}`);
+    }
     lines.push('');
   }
 
@@ -194,23 +196,24 @@ function renderTabSnapshot(tabSnapshot: TabSnapshot, includeSnapshot: 'none' | '
   }
 
   lines.push(`### Page state`);
-  lines.push(`- Page URL: ${tabSnapshot.url}`);
+  const pageUrl = context.config.shortenUrls ? context.urlRegistry().shorten(tabSnapshot.url) : tabSnapshot.url;
+  lines.push(`- Page URL: ${pageUrl}`);
   lines.push(`- Page Title: ${tabSnapshot.title}`);
 
   if (includeSnapshot !== 'none') {
     lines.push(`- Page Snapshot:`);
     lines.push('```yaml');
     if (includeSnapshot === 'incremental' && tabSnapshot.ariaSnapshotDiff !== undefined)
-      lines.push(tabSnapshot.ariaSnapshotDiff);
+      lines.push(maybeShortenYamlUrls(context, tabSnapshot.ariaSnapshotDiff));
     else
-      lines.push(tabSnapshot.ariaSnapshot);
+      lines.push(maybeShortenYamlUrls(context, tabSnapshot.ariaSnapshot));
     lines.push('```');
   }
 
   return lines.join('\n');
 }
 
-function renderTabsMarkdown(tabs: Tab[], force: boolean = false): string[] {
+function renderTabsMarkdown(context: Context, tabs: Tab[], force: boolean = false): string[] {
   if (tabs.length === 1 && !force)
     return [];
 
@@ -226,7 +229,9 @@ function renderTabsMarkdown(tabs: Tab[], force: boolean = false): string[] {
   for (let i = 0; i < tabs.length; i++) {
     const tab = tabs[i];
     const current = tab.isCurrentTab() ? ' (current)' : '';
-    lines.push(`- ${i}:${current} [${tab.lastTitle()}] (${tab.page.url()})`);
+    const url = tab.page.url();
+    const shown = context.config.shortenUrls ? context.urlRegistry().shorten(url) : url;
+    lines.push(`- ${i}:${current} [${tab.lastTitle()}] (${shown})`);
   }
   lines.push('');
   return lines;
@@ -236,6 +241,24 @@ function trim(text: string, maxLength: number) {
   if (text.length <= maxLength)
     return text;
   return text.slice(0, maxLength) + '...';
+}
+
+function maybeShortenText(context: Context, text: string): string {
+  if (!context.config.shortenUrls)
+    return text;
+  return context.urlRegistry().shortenInText(text);
+}
+
+function maybeShortenYamlUrls(context: Context, yaml: string): string {
+  if (!context.config.shortenUrls)
+    return yaml;
+  // Match lines like: "  - /url: <value>"
+  return yaml.replace(/^\s*-\s*\/url:\s*(.+)$/gm, (_m, value: string) => {
+    // Strip surrounding quotes if present.
+    const unquoted = value.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+    const id = context.urlRegistry().shorten(unquoted);
+    return `- /url: "${id}"`;
+  });
 }
 
 function parseSections(text: string): Map<string, string> {

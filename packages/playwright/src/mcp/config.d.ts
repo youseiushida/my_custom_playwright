@@ -163,5 +163,12 @@ export type Config = {
    * Whether to send image responses to the client. Can be "allow", "omit", or "auto". Defaults to "auto", which sends images if the client can display them.
    */
   imageResponses?: 'allow' | 'omit';
+
+  /**
+   * When true, long URLs in MCP responses are replaced with short ids (e.g. U1),
+   * and ARIA snapshot YAML `/url:` values are shortened as well. Use a resolver
+   * tool to map ids back to original URLs if needed.
+   */
+  shortenUrls?: boolean;
 };
 
