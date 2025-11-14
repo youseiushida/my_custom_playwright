@@ -5,6 +5,8 @@ npm install
 npm run build
 $env:PLAYWRIGHT_MCP_SHORTEN_URLS = '1'
 node .\packages\playwright\cli.js run-mcp-server --browser=chromium --port=8931 --allowed-hosts=*
+
+node .\packages\playwright\cli.js run-mcp-server --browser=chromium --port=8931 --allowed-hosts=* --cdp-endpoint http://localhost:9222 --init-script ./init.js
 ```
 http://localhost:8931/mcp
 をStreamableHTTPで接続する。
